@@ -7,6 +7,11 @@ cask "container" do
   desc "Create and run Linux containers using lightweight virtual machines"
   homepage "https://github.com/apple/container"
 
+  livecheck do
+    url :url
+    strategy :github_latest
+  end
+
   depends_on macos: ">= :sequoia"
 
   pkg "container-#{version}-installer-signed.pkg"
