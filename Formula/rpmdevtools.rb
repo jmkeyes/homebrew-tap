@@ -1,5 +1,6 @@
 class Rpmdevtools < Formula
   include Language::Python::Virtualenv
+  include Language::Python::Shebang
 
   desc "RPM development tools"
   homepage "https://pagure.io/rpmdevtools"
@@ -10,12 +11,12 @@ class Rpmdevtools < Formula
   head "https://pagure.io/rpmdevtools.git", branch: "main"
 
   depends_on "help2man"
-  depends_on "python@3"
+  depends_on "python@3.13"
   depends_on "rpm"
 
-  resource "progressbar" do
-    url "https://files.pythonhosted.org/packages/a3/a6/b8e451f6cff1c99b4747a2f7235aa904d2d49e8e1464e0b798272aa84358/progressbar-2.5.tar.gz"
-    sha256 "5d81cb529da2e223b53962afd6c8ca0f05c6670e40309a7219eacc36af9b6c63"
+  resource "progressbar2" do
+    url "https://files.pythonhosted.org/packages/19/24/3587e795fc590611434e4bcb9fbe0c3dddb5754ce1a20edfd86c587c0004/progressbar2-4.5.0.tar.gz"
+    sha256 "6662cb624886ed31eb94daf61e27583b5144ebc7383a17bae076f8f4f59088fb"
   end
 
   resource "requests" do
@@ -43,26 +44,34 @@ class Rpmdevtools < Formula
     sha256 "5baececa9ecba31eff645232d59845c07aa030f0c81ee70184a90d35099a0e63"
   end
 
+  resource "python-utils" do
+    url "https://files.pythonhosted.org/packages/13/4c/ef8b7b1046d65c1f18ca31e5235c7d6627ca2b3f389ab1d44a74d22f5cc9/python_utils-3.9.1.tar.gz"
+    sha256 "eb574b4292415eb230f094cbf50ab5ef36e3579b8f09e9f2ba74af70891449a0"
+  end
+
+  resource "typing-extensions" do
+    url "https://files.pythonhosted.org/packages/d1/bc/51647cd02527e87d05cb083ccc402f93e441606ff1f01739a62c8ad09ba5/typing_extensions-4.14.0.tar.gz"
+    sha256 "8676b788e32f02ab42d9e7c61324048ae4c6d844a399eebace3d4979d75ceef4"
+  end
+
   patch :DATA
 
   def install
     # Install all Python dependencies in a virtualenv.
-    venv = virtualenv_create(libexec, "python3")
+    venv = virtualenv_create(libexec, "python3.13")
     venv.pip_install resources
 
     system "./configure", "--disable-silent-rules", *std_configure_args
 
-    %w[
+    # Replace shebang with path to the python interpreter in the virtual environment.
+    rewrite_shebang python_shebang_rewrite_info("#{libexec}/bin/python"), *%w[
       rpmdev-bumpspec
       rpmdev-rmdevelrpms.py
       rpmdev-sort
       rpmdev-vercmp
       rpmdev-checksig
       rpmdev-spectool
-    ].each do |bin|
-      # Substitute our virtual environment Python interpreter.
-      inreplace bin, "#!/usr/bin/python", "#!#{libexec}/bin/python"
-    end
+    ]
 
     system "make", "install"
   end
