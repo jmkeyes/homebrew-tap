@@ -13,7 +13,5 @@ cask "gyroflow-openfx-plugin" do
     strategy :github_latest
   end
 
-  depends_on macos: ">= :mojave"
-
   artifact "Gyroflow.ofx.bundle", target: "/Library/OFX/Plugins/Gyroflow.ofx.bundle"
 end
